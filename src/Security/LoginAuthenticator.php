@@ -20,7 +20,7 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 {
     use TargetPathTrait;
 
-    public const LOGIN_ROUTE = 'app_login';
+    public const LOGIN_ROUTE = 'visitor_authentication_login';
 
     public function __construct(private UrlGeneratorInterface $urlGenerator)
     {
@@ -28,13 +28,17 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
+        // 2- Récupérer l'email envoyé par l'utilisateur depuis le formulaire de connexion
         $email = $request->getPayload()->getString('email');
-
+        
+        // 3- Sauvegarder l'email en session
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
+        // 4- Vérifier si l'email et le mot de passe provenant du formulaire correspondent 
+            // à un utilisateur existant dans la base de données
         return new Passport(
-            new UserBadge($email),
-            new PasswordCredentials($request->getPayload()->getString('password')),
+            new UserBadge($email), // $user = "SELECT * FROM user WHERE email=:email"
+            new PasswordCredentials($request->getPayload()->getString('password')), // password_verify(string $plainPassword , string $hash)
             [
                 new CsrfTokenBadge('authenticate', $request->getPayload()->getString('_csrf_token')),
                 new RememberMeBadge(),
@@ -44,13 +48,16 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+
+        // 5- Récupérer l'email précedemment envoyé depuis le formulaire et qui a été sauvegardé en session
+            // Effectuer la redirection vers la page de laquelle proviennent les informations.
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
 
-        // For example:
-        // return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        // 6- Dans le cas contraire,
+            // Effectuer une redirection vers la page d'accueil
+        return new RedirectResponse($this->urlGenerator->generate('visitor_welcome_index'));
     }
 
     protected function getLoginUrl(Request $request): string
