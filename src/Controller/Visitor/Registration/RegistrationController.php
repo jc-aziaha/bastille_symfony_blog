@@ -30,6 +30,15 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response
     {
+
+        // Si l'utilisateur est déjà connecté, 
+            // il n'a plus rien à faire sur la page de connexion.
+                // Redirigeons-le vers la page d'accueil.
+        if ($this->getUser()) 
+        {
+            return $this->redirectToRoute('visitor_welcome_index');
+        }
+
         // 1- Créons l'utilisateur à insérer en base de données
         $user = new User();
 
