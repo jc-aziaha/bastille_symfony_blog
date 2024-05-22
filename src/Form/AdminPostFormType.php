@@ -2,16 +2,17 @@
 
 namespace App\Form;
 
-use App\Entity\Category;
+use App\Entity\Tag;
 use App\Entity\Post;
 use App\Entity\User;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Category;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Vich\UploaderBundle\Form\Type\VichImageType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class AdminPostFormType extends AbstractType
 {
@@ -25,6 +26,13 @@ class AdminPostFormType extends AbstractType
                 'multiple' => false,
                 'expanded' => false,
                 'placeholder' => "Choississez une catégorie"
+            ])
+            ->add('tags', EntityType::class, [
+                'class' => Tag::class,
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => false,
+                'placeholder' => "Choississez un ou plusieurs tags"
             ])
             ->add('imageFile', VichImageType::class, [
                 'required' => false,
