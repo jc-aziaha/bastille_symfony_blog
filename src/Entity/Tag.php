@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Repository\CategoryRepository;
+use App\Repository\TagRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -11,13 +11,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 
-
-#[UniqueEntity('name', message: "Cette catégorie existe déjà.")]
-#[ORM\Entity(repositoryClass: CategoryRepository::class)]
-class Category
+#[UniqueEntity('name', message: "Ce tag existe déjà.")]
+#[ORM\Entity(repositoryClass: TagRepository::class)]
+class Tag
 {
-
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,7 +37,7 @@ class Category
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
-
+    
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
@@ -48,14 +45,13 @@ class Category
     /**
      * @var Collection<int, Post>
      */
-    #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'category', orphanRemoval: true)]
+    #[ORM\ManyToMany(targetEntity: Post::class, mappedBy: 'tags')]
     private Collection $posts;
 
     public function __construct()
     {
         $this->posts = new ArrayCollection();
     }
-    
 
     public function getId(): ?int
     {
@@ -67,7 +63,7 @@ class Category
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -79,7 +75,7 @@ class Category
         return $this->slug;
     }
 
-    public function setSlug(?string $slug): static
+    public function setSlug(string $slug): static
     {
         $this->slug = $slug;
 
@@ -122,7 +118,7 @@ class Category
     {
         if (!$this->posts->contains($post)) {
             $this->posts->add($post);
-            $post->setCategory($this);
+            $post->addTag($this);
         }
 
         return $this;
@@ -131,10 +127,7 @@ class Category
     public function removePost(Post $post): static
     {
         if ($this->posts->removeElement($post)) {
-            // set the owning side to null (unless already changed)
-            if ($post->getCategory() === $this) {
-                $post->setCategory(null);
-            }
+            $post->removeTag($this);
         }
 
         return $this;
