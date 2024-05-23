@@ -17,4 +17,6 @@ class Kernel extends BaseKernel
 
         parent::__construct($environment, $debug);
     }
+
+    
 }
